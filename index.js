@@ -82,6 +82,42 @@ const getArtistMetadata = (artistDNS) => {
         });
 }
 
+const getArtistsByGenreDocument = (genre) => {
+    const options = Object.assign({}, defaultOptions);
+    options.path = `/estilos/${genre}/todosartistas.html`;
+    return new Promise((resolve, reject) => {
+        const req = https.request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                resolve(data);
+            });
+        }).on("error", (error) => {
+            reject(error);
+        }).end();
+    });
+};
+const parseArtistsByGenre = (document) => {
+    const regex = /<a href="\/([a-z0-9A-Z/\-]+?)\/">/gm;
+    var match = regex.exec(document);
+    var matches = [];
+    while (match) {
+        matches.push(match[1]);
+        match = regex.exec(document);
+    }
+    return matches;
+};
+const getArtistsByGenre = (genre) => {
+    return getArtistsByGenreDocument(genre)
+        .then(parseArtistsByGenre)
+        // .then((data) => {
+        //     // console.log(data);
+        // });
+}
+
+getArtistsByGenre("rock").then(console.log)
 
 getSongMetadata("teto", "groupies").then((data) => {
     console.log("[getSongMetadata]: ", data);
