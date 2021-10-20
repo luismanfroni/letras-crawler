@@ -112,10 +112,42 @@ const parseArtistsByGenre = (document) => {
 const getArtistsByGenre = (genre) => {
     return getArtistsByGenreDocument(genre)
         .then(parseArtistsByGenre)
-        // .then((data) => {
-        //     // console.log(data);
-        // });
 }
+
+const getGenresDocument = () => {
+    const options = Object.assign({}, defaultOptions);
+    options.path = `/estilos/`;
+    return new Promise((resolve, reject) => {
+        const req = https.request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                resolve(data);
+            });
+        }).on("error", (error) => {
+            reject(error);
+        }).end();
+    });
+};
+const parseGenres = (document) => {
+    const genreList = document.match(/(<ul class="cnt-list cnt-list--col2">[\s\S]+?<\/ul>)/gm);
+    const regex = /<a href="\/estilos\/([a-z0-9A-Z/\-]+?)\/">/gm;
+    var match = regex.exec(genreList);
+    var matches = [];
+    while (match) {
+        matches.push(match[1]);
+        match = regex.exec(genreList);
+    }
+    return matches;
+};
+const getGenres = () => {
+    return getGenresDocument()
+        .then(parseGenres)
+}
+
+getGenres().then(console.log)
 
 getArtistsByGenre("rock").then(console.log)
 
@@ -125,3 +157,4 @@ getSongMetadata("teto", "groupies").then((data) => {
 getArtistMetadata("teto").then((data) => {
     console.log("[getArtistMetadata]: ", data);
 });
+
