@@ -148,3 +148,13 @@ const getGenres = () => {
 }
 
 getGenres().then(console.log)
+
+getArtistsByGenre("rock").then(console.log)
+
+getSongMetadata("teto", "groupies").then((data) => {
+    console.log("[getSongMetadata]: ", data);
+});
+getArtistMetadata("teto").then((data) => {
+    console.log("[getArtistMetadata]: ", data);
+});
+
