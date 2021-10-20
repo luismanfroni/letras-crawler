@@ -44,6 +44,48 @@ const getSongMetadata = (artistDNS, songUrl) => {
             return null;
         });
 }
+
+const getArtistDocument = (artistDNS) => {
+    const options = Object.assign({}, defaultOptions);
+    options.path = `/${artistDNS}/`;
+    return new Promise((resolve, reject) => {
+        const req = https.request(options, (response) => {
+            let data = "";
+            response.on("data", (chunk) => {
+                data += chunk;
+            });
+            response.on("end", () => {
+                resolve(data);
+            });
+        }).on("error", (error) => {
+            reject(error);
+        }).end();
+    });
+};
+const matchArtistDataScript = (data) => {
+    const regex = /<script type="application\/ld\+json">(\{"@context":"http:\/\/schema.org\/","@id":"https:\/\/www.letras.mus.br\/[^<>]+\/","@type":"MusicGroup"[\s\S]+?\})?<\/script>/gm;
+    const match = regex.exec(data);
+    if (match) {
+        return match[1];
+    }
+    return null;
+}
+const getArtistMetadata = (artistDNS) => {
+    return getArtistDocument(artistDNS)
+        .then((data) => {
+            const jsonMetadata = matchArtistDataScript(data);
+            if (jsonMetadata) {
+                const metadata = JSON.parse(jsonMetadata);
+                return metadata;
+            }
+            return null;
+        });
+}
+
+
 getSongMetadata("teto", "groupies").then((data) => {
-    console.log(data);
+    console.log("[getSongMetadata]: ", data);
+});
+getArtistMetadata("teto").then((data) => {
+    console.log("[getArtistMetadata]: ", data);
 });
